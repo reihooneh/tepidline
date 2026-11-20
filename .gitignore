@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+build/
+# Made by scripts/build.mjs
+site/*.html
+site/assets/js/data/
+site/assets/vendor/
+site/assets/fonts/
+site/assets/pyodide/
+site/assets/py/
