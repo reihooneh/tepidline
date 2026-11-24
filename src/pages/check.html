@@ -1,0 +1,112 @@
+<!--{"title": "Check a building · Tepidline", "description": "Load a building's pipe plan, or use an example, and see where its water sits warm, for how long, and which taps deliver it.", "nav": "check", "script": "check.js"}-->
+<div class="wrap">
+  <section class="section">
+    <p class="kicker">Check a building</p>
+    <h1>Where does the water sit warm?</h1>
+    <p class="lede">Pick an example or load your own plan, choose the season and how the building is used, and Tepidline follows the water through a week. The model is Python, running in this tab: nothing is uploaded.</p>
+  </section>
+
+  <div class="workbench">
+    <form class="panel" id="panel" novalidate>
+      <div class="field">
+        <label for="building">Building</label>
+        <select id="building">
+          <option value="house" selected>Family house, Sydney</option>
+          <option value="care">Aged-care wing</option>
+          <option value="mine" disabled>My plan (load one below)</option>
+        </select>
+      </div>
+      <div class="drop" id="drop">
+        <p class="small"><strong>Your own plan</strong>: a JSON file of pipes and outlets, up to 2 MB.</p>
+        <label class="sr" for="file">Choose a plan file</label>
+        <input type="file" id="file" accept=".json,application/json">
+        <p class="small muted"><button type="button" id="template">Download the example as a template</button></p>
+      </div>
+      <p class="small" id="loaded" aria-live="polite"></p>
+      <fieldset>
+        <legend>Conditions</legend>
+        <div class="field-row">
+          <div class="field">
+            <label for="season">Season</label>
+            <select id="season"><option value="summer" selected>Summer</option><option value="winter">Winter</option></select>
+          </div>
+          <div class="field">
+            <label for="roof">Roof colour</label>
+            <select id="roof"><option value="dark" selected>Dark</option><option value="light">Light</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="scenario">How the building is used</label>
+          <select id="scenario">
+            <option value="normal" selected>A normal week</option>
+            <option value="away">Everyone away for six days, back on the seventh</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="setpoint">Water heater</label>
+            <select id="setpoint"><option value="" selected>As planned</option><option value="60">60 °C</option><option value="65">65 °C</option><option value="70">70 °C</option></select>
+          </div>
+          <div class="field">
+            <label for="tmv">Tempering valves</label>
+            <select id="tmv"><option value="" selected>As planned</option><option value="45">45 °C</option><option value="50">50 °C</option></select>
+          </div>
+        </div>
+      </fieldset>
+      <button type="submit" class="primary run" id="run">Follow the water</button>
+      <div class="progress" id="progress" hidden><span></span></div>
+      <p class="status small" id="status" aria-live="polite"></p>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+
+    <div class="results" id="out">
+      <p class="headline" id="headline"></p>
+      <div class="stage" id="stage">
+        <p class="stage-fallback" id="fallback" hidden>This browser can't draw 3D. The plan below shows the same results.</p>
+        <div class="badge" id="badge" aria-hidden="true"></div>
+      </div>
+      <div class="player">
+        <button type="button" id="play" aria-pressed="true">Pause</button>
+        <label class="sr" for="time">Time of day</label>
+        <input type="range" id="time" min="0" max="86370" step="30" value="28800">
+        <span class="clock" id="clock">8:00 am</span>
+      </div>
+
+      <div class="chart-box">
+        <h3>From above</h3>
+        <p class="small muted">Each pipe is coloured by the hours a day its water spends warm; cold pipes are dashed. Select an outlet to see its first water of the day.</p>
+        <div id="plan"></div>
+        <div class="scale"><span>0 h</span><i class="bar"></i><span>10+ h warm a day</span><span><i class="swatch hot"></i> heater</span><span><i class="swatch cold"></i> mains</span><span><i class="swatch rest"></i> tempering valve</span></div>
+      </div>
+
+      <div class="chart-box">
+        <h3>At each tap</h3>
+        <div class="table-box">
+          <table class="outlets">
+            <thead><tr><th>Outlet</th><th class="num">Warm litres a week</th><th class="num hide-sm">Longest warm</th><th class="num hide-sm">Run before hot</th><th>Level</th></tr></thead>
+            <tbody id="outlets"></tbody>
+          </table>
+        </div>
+        <p class="small muted">Warm litres: water that had spent over 4 hours in the warm band before it came out. Longest warm: the most warm time any of the outlet's water had.</p>
+      </div>
+
+      <div class="chart-box">
+        <h3 id="first-title">The first water of the day</h3>
+        <div id="first" data-label="Temperature of the water as the tap runs"></div>
+        <p class="legend small"><span><i class="swatch warm"></i>Temperature of the mixed water</span><span><i class="swatch band"></i>Water that had sat warm over 4 hours</span></p>
+        <p class="small muted" id="first-note"></p>
+      </div>
+
+      <div class="chart-box">
+        <h3>The warmest pipes</h3>
+        <div class="table-box">
+          <table>
+            <thead><tr><th>Pipe</th><th>Carries</th><th class="hide-sm">Runs through</th><th class="num">Length</th><th class="num">Warm a day</th></tr></thead>
+            <tbody id="pipes"></tbody>
+          </table>
+        </div>
+        <div class="buttons"><a class="button primary" href="fix.html" id="to-fix">Plan the fixes for this building</a></div>
+      </div>
+    </div>
+  </div>
+</div>
