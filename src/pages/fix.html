@@ -1,0 +1,57 @@
+<!--{"title": "Plan the fixes · Tepidline", "description": "Every combination of fixes simulated: for any budget, the set that takes away the most warm water at the taps.", "nav": "fix", "script": "fix.js"}-->
+<div class="wrap">
+  <section class="section">
+    <p class="kicker">Plan the fixes</p>
+    <h1>What's worth paying for?</h1>
+    <p class="lede" id="whose">The example house in a Sydney summer. Check your own building first and this page will plan for it.</p>
+  </section>
+
+  <div class="workbench">
+    <form class="panel" id="panel" novalidate>
+      <div class="slider-row">
+        <label for="budget">Budget</label><output for="budget" id="budget-out"></output>
+        <input type="range" id="budget" min="0" max="6000" step="50" value="3000">
+      </div>
+      <p class="muted small">With this budget, the warm water at the taps falls by</p>
+      <p class="big" id="cut" aria-live="polite">…</p>
+      <p class="small" id="cut-detail"></p>
+      <button type="button" class="primary run" id="search" hidden>Find the best fixes</button>
+      <div class="progress" id="progress" hidden><span></span></div>
+      <p class="status small" id="status" aria-live="polite"></p>
+      <p class="error" id="error" role="alert" hidden></p>
+    </form>
+
+    <div class="results">
+      <div class="chart-box">
+        <h3>The best set for this budget</h3>
+        <ul class="fixlist" id="chosen"></ul>
+        <p class="small muted" id="tried"></p>
+      </div>
+      <div class="chart-box">
+        <h3>Every combination</h3>
+        <p class="small muted">Each dot is one set of fixes, simulated for the whole week. The line joins the best set for each budget.</p>
+        <div id="frontier" data-label="Warm water at the taps against cost for every combination of fixes"></div>
+      </div>
+      <div class="chart-box">
+        <h3>Tap by tap</h3>
+        <div class="table-box">
+          <table>
+            <thead><tr><th>Outlet</th><th class="num">Warm litres a week now</th><th class="num">With these fixes</th></tr></thead>
+            <tbody id="taps"></tbody>
+          </table>
+        </div>
+        <p class="small muted">Showers count in full towards the total; baths, basins and sinks make fewer fine droplets and count for less.</p>
+        <div class="buttons"><button type="button" id="show-plan">Show it on the plan</button></div>
+        <div class="pair" id="pair" hidden>
+          <figure><figcaption>Now</figcaption><div id="plan-before"></div></figure>
+          <figure><figcaption>With these fixes</figcaption><div id="plan-after"></div></figure>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h3>All the fixes Tepidline tried</h3>
+        <ul class="fixlist" id="all"></ul>
+        <p class="small muted">Prices are rough Australian figures for planning, not quotes. Fixes in the same family (lagging or moving the same pipes; a habit, a flushing valve or capping the same room) are alternatives, so at most one of each is chosen.</p>
+      </div>
+    </div>
+  </div>
+</div>
