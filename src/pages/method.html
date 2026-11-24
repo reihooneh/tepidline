@@ -1,0 +1,51 @@
+<!--{"title": "How it works · Tepidline", "description": "How Tepidline follows water through a building's pipes, counts the hours it sits warm, and checks itself.", "nav": "method", "script": "method.js"}-->
+<div class="wrap prose">
+  <section class="section">
+    <p class="kicker">How it works</p>
+    <h1>Water only grows things when it stands still and lukewarm.</h1>
+    <p class="lede">Moving water at 60 °C is hostile to Legionella; water at 15 °C keeps it dormant. The trouble is the water in between: tempered to 50 °C for safety and then left to cool in a pipe, or cold water warmed by a summer roof space, sitting there until someone has a shower. Tepidline follows that water.</p>
+  </section>
+
+  <section class="section">
+    <h2>1. Plug flow, parcel by parcel</h2>
+    <p>Each pipe holds a queue of water parcels, each with a volume, a temperature, how long it has spent warm, how much heat treatment it has had, and its age. When a tap runs, the parcels at the end of its pipe come out and every pipe upstream shifts along by the same volume, all the way back to the water heater, the mains, or a tempering valve. Tempering valves and people at mixer taps choose the share of hot water that gives the temperature they want, given what each side is about to deliver. Taps run in ten-second steps for their first minute, then in minute steps.</p>
+
+    <h2>2. Standing water, exactly</h2>
+    <p>Between draws, the water and the pipe wall share one temperature that relaxes towards the air around the pipe:</p>
+    <p class="formula">T(t) = T<sub>air</sub> + (T<sub>0</sub> − T<sub>air</sub>) e<sup>−t/τ</sup>, &nbsp; τ = C′ / U′</p>
+    <p>C′ is the heat capacity of a metre of water and copper, and U′ the heat loss per metre through the wall, any lagging, and the air film outside. A bare DN15 copper pipe has τ of about 26 minutes; with 13 mm of lagging, about 51. The air comes from Sydney's average daily temperatures for January and July, with a roof space that heats up through the day, more under a dark roof.</p>
+
+    <h2>3. Warm hours</h2>
+    <p>Guidance puts Legionella's growth range at roughly 25 to 45 °C. Tepidline counts warm hours: time in that band, in full across its middle and ramping down to nothing at its edges, so water that only touches 25 °C in a summer wall counts for little. Because the weight is piecewise linear in temperature and the temperature is an exponential in time, the warm hours of every parcel are integrated exactly, not stepped. Water that reaches more than 45 °C is also heat-treated, at measured inactivation rates; once it has had the equivalent of a hundredfold reduction, its warm hours start again from zero. Water that comes out of a tap after more than four warm hours counts as warm water, and showers count most because they make the fine droplets people breathe.</p>
+
+    <h2>4. Every combination of fixes</h2>
+    <p>The candidate fixes come from the building itself: lag or move the hot and tempered pipes in the roof, lag or move the cold ones, temper at each bathroom instead of at the heater, run the heater hotter, and for rarely used rooms a flushing habit, an automatic flushing valve or capping the outlets. Fixes to the same pipes are alternatives. Tepidline simulates every allowed combination for the whole week (144 for the example house), so the best set for each budget is found, not estimated.</p>
+  </section>
+
+  <section class="section">
+    <h2>Checks</h2>
+    <div id="checks"></div>
+    <div class="chart-box">
+      <h3>A lagged pipe cooling: one temperature against a layered model</h3>
+      <div id="cool" data-label="Water temperature in a lagged pipe cooling from 60 °C"></div>
+      <p class="legend small"><span><i class="swatch warm"></i>Tepidline (one temperature)</span><span><i class="swatch rest"></i>Lagging in 12 layers that store heat</span></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What it leaves out</h2>
+    <ul>
+      <li>Bacteria themselves: Tepidline screens for conditions; it does not predict counts or infection risk.</li>
+      <li>Biofilm and sediment, which shelter bacteria even in hot systems, and dead legs that exchange water with the main by mixing rather than flow.</li>
+      <li>Heat lost by water while it moves, and heat exchanged between pipes laid together.</li>
+      <li>Hot water recirculation loops and the stratified bottom of a storage tank.</li>
+    </ul>
+    <h2>Sources</h2>
+    <ul class="sources">
+      <li>Growth range 25–45 °C: Heida et al., <em>Environmental Science: Water Research &amp; Technology</em>, 2022; CDC, Controlling Legionella in building water systems. <a href="https://www.cdc.gov/control-legionella/php/guidance/monitor-water-guidance.html" rel="noopener">cdc.gov</a></li>
+      <li>Heat inactivation rates at 45, 50, 55 and 60 °C: Sanden et al. 1989, as tabulated by Cazals et al., <em>Microorganisms</em> 10(2):443, 2022. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8874534/" rel="noopener">pmc.ncbi.nlm.nih.gov</a></li>
+      <li>Store at 60 °C, deliver at 50 °C (45 °C in aged care and schools): Victorian Building Authority, Plumbing HW-01, on AS/NZS 3500.4. <a href="https://www.vba.vic.gov.au/" rel="noopener">vba.vic.gov.au</a></li>
+      <li>Sydney's January and July average temperatures: Bureau of Meteorology climate statistics. <a href="https://www.bom.gov.au/" rel="noopener">bom.gov.au</a></li>
+    </ul>
+  </section>
+</div>
