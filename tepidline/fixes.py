@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from itertools import pairwise
 from typing import Any
 
-from .model import Building, load
+from .model import Building, PlanError, load
 from .sim import Settings, simulate
 
 LAG_PER_M = 15.0  # closed-cell lagging fitted in the roof space, $/m
@@ -223,7 +223,7 @@ def apply(data: dict[str, Any], chosen: list[str]) -> tuple[dict[str, Any], dict
             else:
                 for o in d["outlets"]:
                     if o["id"] in room_oids:
-                        o["uses"] = o["uses"] + [{"at": 18.0, "minutes": 2, "days": [2, 5]}]
+                        o["uses"] = [*o["uses"], {"at": 18.0, "minutes": 2, "days": [2, 5], "flush": True}]
         else:
             raise ValueError(f"unknown fix {fid}")
     return d, extra
@@ -242,7 +242,8 @@ def _point_of_use(d: dict[str, Any], b: Building, tmv_id: str) -> None:
     d["tmvs"] = [x for x in d["tmvs"] if x["id"] != tmv_id]
     for k, (_room, oids) in enumerate(sorted(by_room.items())):
         first = b.outlets[oids[0]]
-        assert first.hot and first.cold
+        if not (first.hot and first.cold):
+            raise PlanError(f"{first.name} needs both a hot and a cold pipe to get its own tempering valve")
         hp, cp = b.pipes[first.hot].points[-1], b.pipes[first.cold].points[-1]
         at = [round((hp[0] + cp[0]) / 2, 3), 0.4, round((hp[2] + cp[2]) / 2, 3)]
         vid = f"{tmv_id}-{k}"
@@ -312,7 +313,8 @@ def plan(data: dict[str, Any], settings: Settings, progress: Callable[[int, int]
         if not frontier or r["score"] < best - max(0.05, 0.005 * best):
             frontier.append(r)
             best = r["score"]
-    return {"fixes": [f.__dict__ for f in fixes], "baseline": baseline, "combos": rows, "frontier": frontier}
+    names = {oid: o.name for oid, o in load(data).outlets.items()}
+    return {"fixes": [f.__dict__ for f in fixes], "names": names, "baseline": baseline, "combos": rows, "frontier": frontier}
 
 
 def best_for(result: dict[str, Any], budget: float) -> dict[str, Any]:
