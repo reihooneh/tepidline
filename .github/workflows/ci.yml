@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: jobs can read the code and nothing else unless they say so.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pinned Python tools
+        run: pip install pytest==8.3.4 ruff==0.8.4 mypy==1.13.0 bandit==1.8.0
+      - name: Lint, types and security checks
+        run: |
+          ruff check .
+          ruff format --check .
+          mypy tepidline
+          bandit -q -r tepidline
+      - name: Core tests
+        run: python -m pytest -q
+      - name: Model checks
+        run: python -m tepidline verify > /dev/null
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the pinned packages and test browser
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Build the site
+        run: npm run build
+      - name: Browser tests
+        run: npm test
+      - name: Audit dependencies
+        run: npm audit --audit-level=moderate
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build the site
+        run: |
+          npm ci
+          npm run build
+      - uses: actions/configure-pages@v5
+      - name: Publish only the built site folder
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
