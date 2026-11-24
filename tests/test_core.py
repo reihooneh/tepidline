@@ -233,3 +233,15 @@ def test_api_round_trip() -> None:
     assert set(out["result"]["outlets"]) == set(out["building"]["outlets"])
     bad = json.loads(api.call(json.dumps({"op": "check", "plan": "house", "settings": {"season": "monsoon"}})))
     assert bad["ok"] is False
+
+
+def test_flushing_moves_water_but_nobody_receives_it(house: dict) -> None:
+    b = load(house)
+    plain = Simulation(b, Settings(record_day=-1))
+    plain.run()
+    flushed = Simulation(b, Settings(record_day=-1), {"guest-shower": [(3.0, 2.0)]})
+    flushed.run()
+    assert flushed.outlets["guest-shower"].litres == plain.outlets["guest-shower"].litres
+    assert flushed.outlets["guest-shower"].draws == plain.outlets["guest-shower"].draws
+    # the guest shower's own first water is now fresh
+    assert flushed.outlets["guest-shower"].worst_hours < plain.outlets["guest-shower"].worst_hours

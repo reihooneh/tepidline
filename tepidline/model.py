@@ -67,6 +67,7 @@ class Use:
     at: float  # hour of the day
     minutes: float
     days: tuple[int, ...]  # 0 = Monday
+    flush: bool = False  # run to waste to freshen the pipes, with nobody breathing the spray
 
 
 @dataclass
@@ -261,7 +262,10 @@ def load(data: Any) -> Building:
                 or not all(isinstance(x, int) and not isinstance(x, bool) and 0 <= x <= 6 for x in days)
             ):
                 raise PlanError(f"outlet {oid}: days must list weekdays 0 (Monday) to 6")
-            uses.append(Use(_num(u, "at", 0, 23.9), _num(u, "minutes", 0.1, 60), tuple(sorted(set(days)))))
+            flush = u.get("flush", False)
+            if not isinstance(flush, bool):
+                raise PlanError(f"outlet {oid}: flush must be true or false")
+            uses.append(Use(_num(u, "at", 0, 23.9), _num(u, "minutes", 0.1, 60), tuple(sorted(set(days))), flush))
         _, flow, temp = KINDS[str(kind)]
         outlets[oid] = Outlet(
             oid,

@@ -76,6 +76,7 @@ class Simulation:
         self.extra = extra_uses or {}
         self.snap_t: list[float] = []
         self.snaps: dict[str, list[list[float]]] = {pid: [] for pid in b.pipes}
+        self.snap_air: dict[str, list[float]] = {z: [] for z in ("roof", "outdoor", "indoor", "underfloor")}
         for pid, p in b.pipes.items():
             start = self.mains if p.kind == "cold" else self.clim.air(p.zone, 0)
             self.state[pid] = [[self.vols[pid], start, 0.0, 0.0, 0.0]]
@@ -206,7 +207,14 @@ class Simulation:
 
     # ------------------------------------------------------------ running a tap
     def draw_step(
-        self, oid: str, dv_total: float, t: float, first: list[list[float]] | None, since: float, waiting: list[bool]
+        self,
+        oid: str,
+        dv_total: float,
+        t: float,
+        first: list[list[float]] | None,
+        since: float,
+        waiting: list[bool],
+        count: bool = True,
     ) -> None:
         o = self.b.outlets[oid]
         res = self.outlets[oid]
@@ -221,7 +229,7 @@ class Simulation:
             parts += self.pull(o.hot, f * dv_total, t)
         if f < 1 and o.cold:
             parts += self.pull(o.cold, (1 - f) * dv_total, t)
-        if not self.measuring:
+        if not self.measuring or not count:
             return
         litres = dv_total * 1000
         res.litres += litres
@@ -240,19 +248,21 @@ class Simulation:
             first.append([round(since, 1), round(m[1], 2), round(max(p[2] for p in parts) / 3600 if parts else 0, 2)])
 
     # ------------------------------------------------------------ the week
-    def schedule(self) -> list[tuple[float, float, str]]:
-        draws: list[tuple[float, float, str]] = []
+    def schedule(self) -> list[tuple[float, float, str, bool]]:
+        """Every draw in the week: (start, seconds, outlet, flush). Flushes run water to waste with
+        nobody in the spray, so their water isn't counted as reaching anyone. Automatic flushing
+        valves run whether or not anyone is home."""
+        draws: list[tuple[float, float, str, bool]] = []
         for d in range(self.s.days):
             home = self.s.scenario != "away" or d == 0 or d == self.s.days - 1
-            if not home:
-                continue
             weekday = d % 7
             for oid, o in self.b.outlets.items():
-                for u in o.uses:
-                    if weekday in u.days:
-                        draws.append((d * DAY + u.at * 3600, u.minutes * 60, oid))
+                if home:
+                    for u in o.uses:
+                        if weekday in u.days:
+                            draws.append((d * DAY + u.at * 3600, u.minutes * 60, oid, u.flush))
                 for at, minutes in self.extra.get(oid, []):
-                    draws.append((d * DAY + at * 3600, minutes * 60, oid))
+                    draws.append((d * DAY + at * 3600, minutes * 60, oid, True))
         draws.sort()
         return draws
 
@@ -260,12 +270,12 @@ class Simulation:
         draws = self.schedule()
         end = self.s.days * DAY
         events: list[tuple[float, int, str, float, float]] = []  # time, order, outlet, dv, since start
-        for start, dur, oid in draws:
+        for start, dur, oid, flush in draws:
             q = self.b.outlets[oid].flow / 60000  # m^3/s
             k = 0.0
             while k < dur - 1e-9:
                 step = min(STEP if k < 60.0 else LONG_STEP, dur - k)
-                events.append((start + k, 1, oid, q * step, k))
+                events.append((start + k, 2 if flush else 1, oid, q * step, k))
                 k += step
         t = TICK
         while t <= end + 1e-9:
@@ -285,6 +295,9 @@ class Simulation:
                     self.snapshot(when)
                 continue
             start = when - since
+            if kind == 2:  # a flush: the water moves, but nobody receives it
+                self.draw_step(oid, dv, when, None, since, [False], count=False)
+                continue
             if since == 0.0:
                 if self.measuring:
                     self.outlets[oid].draws += 1
@@ -296,6 +309,8 @@ class Simulation:
 
     def snapshot(self, t: float) -> None:
         self.snap_t.append(t)
+        for zone, temps in self.snap_air.items():
+            temps.append(round(self.clim.air(zone, t), 1))
         for pid, q in self.state.items():
             vol = self.vols[pid]
             temps = []
@@ -331,7 +346,11 @@ class Simulation:
         }
         out: dict[str, Any] = {"score": round(score, 3), "outlets": outlets, "pipes": pipes}
         if self.snap_t:
-            out["snapshots"] = {"t": [round(x - self.s.record_day * DAY) for x in self.snap_t], "pipes": self.snaps}
+            out["snapshots"] = {
+                "t": [round(x - self.s.record_day * DAY) for x in self.snap_t],
+                "pipes": self.snaps,
+                "air": self.snap_air,
+            }
         return out
 
 
