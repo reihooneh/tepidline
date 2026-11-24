@@ -1,0 +1,63 @@
+<!--{"title": "Tepidline: find the water that sits warm in your pipes", "description": "Follows every litre of water through a building's pipes for a week, finds where it sits between 25 and 45 °C long enough to matter for Legionella, and plans the cheapest fixes.", "nav": "index", "script": "home.js"}-->
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <p class="kicker">Water safety at home and in care</p>
+      <h1>Hot water, cold water, and the <em>lukewarm water in between.</em></h1>
+      <p class="lede">Legionella bacteria grow in water that sits between 25 and 45 °C, and people catch Legionnaires' disease by breathing in fine droplets, most often from a shower. Australian rules store hot water at 60 °C and then cool it to 50 °C for showers, and a Sydney roof space bakes cold pipes on a summer afternoon. Tepidline follows every litre through a building's pipes for a week, finds where it sits warm and for how long, and works out which fixes are worth the money.</p>
+      <div class="buttons">
+        <a class="button primary" href="check.html">Check a building</a>
+        <a class="button" href="fix.html">Plan the fixes</a>
+      </div>
+    </div>
+    <div>
+      <div class="stage" id="hero-stage">
+        <p class="stage-fallback" id="hero-fallback" hidden>This browser can't draw 3D. The plan on the check page shows the same results.</p>
+        <div class="badge" id="hero-badge" aria-hidden="true"></div>
+      </div>
+      <div class="player">
+        <button type="button" id="play" aria-pressed="true">Pause</button>
+        <label class="sr" for="time">Time of day</label>
+        <input type="range" id="time" min="0" max="86370" step="30" value="28800">
+        <span class="clock" id="clock" aria-live="off">8:00 am</span>
+      </div>
+      <p class="legend small"><span><i class="swatch bar"></i>Water 10 °C to 65 °C</span><span>Amber: the warm band. Drag to turn.</span></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The example house on a Sydney summer week</h2>
+    <p class="muted" id="home-sub"></p>
+    <div class="tiles">
+      <div class="tile"><div class="num hot" id="t-shower">…</div><div class="what" id="t-shower-what"></div></div>
+      <div class="tile"><div class="num hot" id="t-pipe">…</div><div class="what" id="t-pipe-what"></div></div>
+      <div class="tile"><div class="num hot" id="t-guest">…</div><div class="what" id="t-guest-what"></div></div>
+      <div class="tile"><div class="num cool" id="t-fix">…</div><div class="what" id="t-fix-what"></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How it works</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="step-num">1</div>
+        <h3>Follow the water</h3>
+        <p>Every pipe holds a queue of water. When a tap runs, the water at its end comes out and everything upstream shifts along, fed by the heater, the mains or a tempering valve mixing to its set temperature. A week of showers, basins and baths, in steps of seconds.</p>
+      </div>
+      <div class="card">
+        <div class="step-num">2</div>
+        <h3>Count the warm hours</h3>
+        <p>Standing water drifts towards the temperature around the pipe: the roof space, a wall, under the floor. Tepidline counts, exactly, how long each parcel of water spends in the warm band, and resets the count when it has been hot enough for long enough to be heat-treated.</p>
+      </div>
+      <div class="card">
+        <div class="step-num">3</div>
+        <h3>Price the fixes</h3>
+        <p>Lagging, moving pipes out of the roof, tempering at each bathroom, a hotter heater, flushing a rarely used room. Tepidline simulates every allowed combination, so for any budget it can say which set takes away the most warm water at the shower head, without guessing.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <p class="note"><strong>A screening tool, not a water test.</strong> Tepidline shows where a building's design and use leave water sitting warm, the conditions guidelines warn about. It does not measure bacteria. For hospitals, aged care and other buildings with a water management plan, use it to ask better questions of your plumber and risk assessor.</p>
+  </section>
+</div>
