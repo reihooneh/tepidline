@@ -137,7 +137,7 @@ class Building:
 
 def _num(d: dict[str, Any], key: str, lo: float, hi: float, default: float | None = None) -> float:
     v = d.get(key, default)
-    if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
+    if isinstance(v, bool) or not isinstance(v, int | float) or not math.isfinite(v):
         raise PlanError(f"{key} must be a number")
     if not lo <= v <= hi:
         raise PlanError(f"{key} must be between {lo:g} and {hi:g}")
@@ -156,7 +156,7 @@ def _point(v: Any, what: str) -> tuple[float, float, float]:
         raise PlanError(f"{what} must be [x, y, z] in metres")
     out = []
     for x in v:
-        if isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) or abs(x) > 500:
+        if isinstance(x, bool) or not isinstance(x, int | float) or not math.isfinite(x) or abs(x) > 500:
             raise PlanError(f"{what} must be [x, y, z] in metres")
         out.append(float(x))
     return out[0], out[1], out[2]
@@ -284,7 +284,7 @@ def load(data: Any) -> Building:
     for rr in data.get("rooms", []) if isinstance(data.get("rooms", []), list) else []:
         if isinstance(rr, dict) and isinstance(rr.get("box"), list) and len(rr["box"]) == 4:
             box = rr["box"]
-            if all(isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x) and abs(x) < 500 for x in box):
+            if all(isinstance(x, int | float) and not isinstance(x, bool) and math.isfinite(x) and abs(x) < 500 for x in box):
                 rooms.append(Room(_str(rr, "name", 30), (float(box[0]), float(box[1]), float(box[2]), float(box[3]))))
     if len(rooms) > 60:
         raise PlanError("at most 60 rooms")

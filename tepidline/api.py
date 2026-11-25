@@ -29,7 +29,7 @@ def settings_from(d: Any) -> Settings:
         v = d.get(key)
         if v is None:
             return None
-        if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or not lo <= v <= hi:
+        if isinstance(v, bool) or not isinstance(v, int | float) or not math.isfinite(v) or not lo <= v <= hi:
             raise PlanError(f"{key} must be between {lo:g} and {hi:g}")
         return float(v)
 

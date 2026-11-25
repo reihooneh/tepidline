@@ -255,11 +255,11 @@ def _point_of_use(d: dict[str, Any], b: Building, tmv_id: str) -> None:
         )
         d["tmvs"].append({"id": vid, "hot": f"{vid}-h", "cold": f"{vid}-c", "set": t.set, "at": at})
         for oid in oids:
-            o = next(x for x in d["outlets"] if x["id"] == oid)
+            od: dict[str, Any] = next(x for x in d["outlets"] if x["id"] == oid)
             out_at = list(b.outlets[oid].at)
             pid = f"{vid}-{oid}"
             d["pipes"].append({"id": pid, "from": f"tmv:{vid}", "zone": "wall", "points": [at, out_at], "length": 0.8})
-            o["hot"] = pid
+            od["hot"] = pid
     _prune(d)
 
 

@@ -31,7 +31,7 @@ def _warm_numeric(t0: float, ta: float, tau: float, dt: float, n: int = 40000) -
 
 
 def check_warm_time(cases: int = 300) -> dict[str, Any]:
-    rng = random.Random(7)  # nosec B311: sampling test cases, not security
+    rng = random.Random(7)  # nosec B311
     worst = 0.0
     for _ in range(cases):
         a = (rng.uniform(5, 70), rng.uniform(5, 60), rng.uniform(600, 6000), rng.uniform(60, 30000))
